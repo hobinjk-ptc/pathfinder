@@ -1,63 +1,90 @@
-import CellType from './CellType.js';
 import Node from './Node.js';
+import {lineSegmentsIntersect} from './Utilities.js';
 
 export default class Field {
   constructor(width, height) {
     this.width = width;
     this.height = height;
-    this.cells = new Array(width * height);
-    this.nodes = new Array(width * height);
+    this.obstacles = [];
+    this.nodes = new Map();
 
-    for (let x = 0; x < width; x++) {
-      for (let y = 0; y < height; y++) {
-        this.cells[y * width + x] = CellType.EMPTY;
-        if (x === 4 && y > 3) {
-          this.cells[y * width + x] = CellType.WALL;
+    for (let i = 0; i < 50; i++) {
+      const x = Math.random() * width * 6 / 8 + width / 8;
+      const y = Math.random() * height * 6 / 8 + height / 8;
+      const w = 16;
+      const h = 80;
+
+      this.obstacles.push({
+        x: x - w / 2,
+        y: y - h / 2,
+        width: w,
+        height: h,
+      });
+      const allowance = 4;
+      const lX = x - w / 2 - allowance;
+      const rX = x + w / 2 + allowance;
+      const tY = y - h / 2 - allowance;
+      const bY = y + h / 2 + allowance;
+      this.getNode(lX, tY);
+      this.getNode(rX, tY);
+      this.getNode(rX, bY);
+      this.getNode(lX, bY);
+    }
+  }
+
+  lineIntersectsObstacle(startX, startY, endX, endY) {
+    for (const obstacle of this.obstacles) {
+      const lX = obstacle.x;
+      const tY = obstacle.y;
+      const rX = obstacle.x + obstacle.width;
+      const bY = obstacle.y + obstacle.height;
+      const anyIntersect =
+        lineSegmentsIntersect(startX, startY, endX, endY, lX, tY, rX, tY) ||
+        lineSegmentsIntersect(startX, startY, endX, endY, rX, tY, rX, bY) ||
+        lineSegmentsIntersect(startX, startY, endX, endY, rX, bY, lX, bY) ||
+        lineSegmentsIntersect(startX, startY, endX, endY, lX, bY, lX, tY);
+      if (anyIntersect) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  buildNodeNeighborGraph() {
+    const nodes = Array.from(this.nodes.values());
+    for (let i = 0; i < nodes.length; i++) {
+      const iNode = nodes[i];
+      for (let j = i + 1; j < nodes.length; j++) {
+        const jNode = nodes[j];
+        if (this.cost(iNode, jNode) > this.height / 2) {
+          continue;
         }
-        this.nodes[y * width + x] = null;
+        if (this.lineIntersectsObstacle(iNode.x, iNode.y, jNode.x, jNode.y)) {
+          continue;
+        }
+        iNode.neighbors.push(jNode);
+        jNode.neighbors.push(iNode);
       }
     }
   }
 
+  key(x, y) {
+    return Math.floor(y * this.width + x);
+  }
   getNode(x, y) {
-    if (this.nodes[y * this.width + x]) {
-      return this.nodes[y * this.width + x];
+    const key = this.key(x, y);
+    if (this.nodes.has(key)) {
+      return this.nodes.get(key);
     }
     const node = new Node(this, x, y);
-    this.nodes[y * this.width + x] = node;
+    this.nodes.set(key, node);
     return node;
   }
 
-  getCellType(x, y) {
-    return this.cells[y * this.width + x];
-  }
-
   cost(to, from) {
-    if (this.getCellType(from.x, from.y) === CellType.WALL ||
-        this.getCellType(to.x, to.y) === CellType.WALL) {
-      return 10000;
-    }
     const dx = to.x - from.x;
     const dy = to.y - from.y;
     const cost = Math.sqrt(dx * dx + dy * dy);
     return cost;
-  }
-
-  debug() {
-    let out = '';
-    for (let y = 0; y < this.height; y++) {
-      for (let x = 0; x < this.width; x++) {
-        const i = y * this.width + x;
-        if (this.cells[i] === CellType.WALL) {
-          out += 'W';
-        } else if (this.nodes[i]) {
-          out += this.nodes[i].tag || 'N';
-        } else {
-          out += ' ';
-        }
-      }
-      out += '\n';
-    }
-    return out;
   }
 }

@@ -29,8 +29,6 @@ export default class AStar {
 
     // eslint-disable-next-line
     while (true) {
-      console.log('========================== NEW STEP =========================');
-      console.log(this.field.debug());
       const current = openSet.pop();
       if (!current) {
         return;
@@ -38,11 +36,13 @@ export default class AStar {
       if (current.id === this.goal.id) {
         return this.reconstructPath(current);
       }
-      current.tag = 'V';
+      if (current.tag !== 'S') {
+        current.tag = 'V';
+      }
 
       closedSet.add(current.id);
 
-      current.neighbors().forEach(neighbor => {
+      current.neighbors.forEach(neighbor => {
         if (closedSet.has(neighbor.id)) {
           return;
         }
