@@ -8,12 +8,15 @@ export default class CanvasRenderer {
     this.gfx = this.elt.getContext('2d');
   }
 
-  drawField(field) {
-    this.gfx.clearRect(0, 0, this.width, this.height);
-    this.gfx.fillStyle = '#993300';
+  fillObstacles(field) {
     for (let rect of field.obstacles) {
       this.gfx.fillRect(rect.x, rect.y, rect.width, rect.height);
     }
+  }
+  drawField(field) {
+    this.gfx.clearRect(0, 0, this.width, this.height);
+    this.gfx.fillStyle = '#993300';
+    this.fillObstacles(field);
 
     function isCool(node) {
       return node.tag === 'P' || node.tag === 'S' || node.tag === 'G';
@@ -73,5 +76,15 @@ export default class CanvasRenderer {
       this.gfx.ellipse(node.x, node.y, 8, 8, 0, 0, 2 * Math.PI);
       this.gfx.fill();
     }
+  }
+
+  drawPath(path) {
+    this.gfx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+    this.gfx.beginPath();
+    this.gfx.moveTo(path[0].x, path[0].y);
+    for (let i = 1; i < path.length; i++) {
+      this.gfx.lineTo(path[i].x, path[i].y);
+    }
+    this.gfx.stroke();
   }
 }

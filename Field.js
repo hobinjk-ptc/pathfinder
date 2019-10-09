@@ -30,6 +30,14 @@ export default class Field {
       this.getNode(rX, bY);
       this.getNode(lX, bY);
     }
+
+    for (let x = 0; x <= this.width; x += 10) {
+      for (let y = 0; y <= this.height; y += 10) {
+        let dx = Math.round((Math.random() - 0.5) * 10);
+        let dy = Math.round((Math.random() - 0.5) * 10);
+        this.getNode(x + dx, y + dy);
+      }
+    }
   }
 
   lineIntersectsObstacle(startX, startY, endX, endY) {
@@ -50,13 +58,26 @@ export default class Field {
     return false;
   }
 
+  pointInsideObstacle(x, y) {
+    for (const obstacle of this.obstacles) {
+      const lX = obstacle.x;
+      const tY = obstacle.y;
+      const rX = obstacle.x + obstacle.width;
+      const bY = obstacle.y + obstacle.height;
+      if (x > lX && x < rX && y > tY && y < bY) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   buildNodeNeighborGraph() {
     const nodes = Array.from(this.nodes.values());
     for (let i = 0; i < nodes.length; i++) {
       const iNode = nodes[i];
       for (let j = i + 1; j < nodes.length; j++) {
         const jNode = nodes[j];
-        if (this.cost(iNode, jNode) > this.height / 2) {
+        if (this.cost(iNode, jNode) > 40) {
           continue;
         }
         if (this.lineIntersectsObstacle(iNode.x, iNode.y, jNode.x, jNode.y)) {
@@ -77,6 +98,9 @@ export default class Field {
       return this.nodes.get(key);
     }
     const node = new Node(this, x, y);
+    if (this.pointInsideObstacle(x, y)) {
+      return node;
+    }
     this.nodes.set(key, node);
     return node;
   }

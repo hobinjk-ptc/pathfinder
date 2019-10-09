@@ -10,6 +10,9 @@ export default class PriorityQueue {
         min = value;
       }
     }
+    if (!min) {
+      return null;
+    }
     this.queue.delete(min.node.id);
     return min.node;
   }
