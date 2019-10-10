@@ -5,37 +5,21 @@ import stlToDepthImage from './stlToDepthImage.js'
 
 const width = 1180;
 const height = 650;
+const darkMode = false;
 
 const renderer = new CanvasRenderer(width, height);
 
-//const field = new Field(width, height);
-//const start = field.getNode(10, field.height / 2);
-//start.tag = 'S';
-//const goal = field.getNode(field.width - 10, field.height / 2);
-//goal.tag = 'G';
-//field.buildNodeNeighborGraph();
-
-// const aStar = new AStar(field, start, goal);
-// let path = aStar.search();
-// for (let node of path) {
-//   if (node.tag === 'V') {
-//     node.tag = 'P';
-//   }
-// }
-
-// renderer.drawField(field);
-
-function start(obstacleGfx, baseId) {
-  const field = new Field(width, height, obstacleGfx);
-  const coolX = 733;
-  const coolY = 215;
-  for (let dx = -10; dx <= 10; dx += 2) {
-    for (let dy = -10; dy <= 10; dy += 2) {
+function addCoolNodes(field, coolX, coolY, scaleX, scaleY) {
+  for (let dx = -scaleX; dx <= scaleX; dx += 2) {
+    for (let dy = -scaleY; dy <= scaleY; dy += 2) {
       field.getNode(coolX + dx, coolY + dy);
     }
   }
-  field.buildNodeNeighborGraph();
+  // renderer.gfx.fillStyle = '#995000';
+  // renderer.gfx.fillRect(coolX - scaleX, coolY - scaleY, scaleX * 2, scaleY * 2);
+}
 
+function start(obstacleGfx, baseId) {
   renderer.gfx.fillStyle = 'black';
   // renderer.fillObstacles(field);
   // renderer.drawField(field);
@@ -54,6 +38,20 @@ function start(obstacleGfx, baseId) {
     }
   }
   renderer.gfx.putImageData(id, 0, 0);
+
+  if (darkMode === true) {
+    setTimeout(() => {
+      renderer.gfx.fillStyle = 'black';
+      renderer.gfx.fillRect(0, 0, width, height);
+    }, 1000);
+  }
+
+  const field = new Field(width, height, obstacleGfx);
+  addCoolNodes(field, 733, 215, 10, 10);
+  addCoolNodes(field, 914, 264, 8, 10);
+  addCoolNodes(field, 920, 288, 12, 12);
+  addCoolNodes(field, 929, 310, 16, 8);
+  field.buildNodeNeighborGraph();
 
   function frame() {
     const nodes = Array.from(field.nodes.values());
