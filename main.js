@@ -30,7 +30,23 @@ function start(obstacleGfx) {
   field.buildNodeNeighborGraph();
 
   renderer.gfx.fillStyle = 'black';
-  renderer.fillObstacles(field);
+  // renderer.fillObstacles(field);
+  // renderer.drawField(field);
+  let id = obstacleGfx.getImageData(0, 0, width, height);
+  for (let i = 0; i < id.data.length / 4; i++) {
+    if (id.data[4 * i] > 127) {
+      id.data[4 * i + 0] = 0;
+      id.data[4 * i + 1] = 0;
+      id.data[4 * i + 2] = 0;
+      id.data[4 * i + 3] = 127;
+    } else {
+      id.data[4 * i + 0] = 0;
+      id.data[4 * i + 1] = 0;
+      id.data[4 * i + 2] = 0;
+      id.data[4 * i + 3] = 0;
+    }
+  }
+  renderer.gfx.putImageData(id, 0, 0);
 
   function frame() {
     const nodes = Array.from(field.nodes.values());
@@ -56,6 +72,8 @@ function start(obstacleGfx) {
 }
 
 stlToDepthImage(function(gfx) {
+  gfx.clearRect(0, 0, width, height);
+  gfx.drawImage(document.querySelector('img'), 0, 0);
   console.log('this will work', gfx);
   start(gfx);
 });

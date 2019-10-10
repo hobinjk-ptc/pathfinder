@@ -1,5 +1,4 @@
 import Node from './Node.js';
-import {lineSegmentsIntersect} from './Utilities.js';
 
 export default class Field {
   constructor(width, height, obstacleGfx) {
@@ -10,61 +9,48 @@ export default class Field {
     const obs = obstacleGfx.getImageData(0, 0, width, height).data;
     this.obs = obs;
 
-    for (let y = 0; y < height; y += 4) {
-      for (let x = 0; x < width; x += 4) {
-        let w = 8;
-        let h = 8;
-        if (obs[(y * width + x) * 4] > 127) {
-          this.obstacles.push({
-            x: x - w / 2,
-            y: y - h / 2,
-            width: w,
-            height: h,
-          });
+    for (let x = 0; x < this.width; x += 6) {
+      for (let y = 0; y < this.height; y += 6) {
+        let dx = Math.round((Math.random() - 0.5) * 4);
+        let dy = Math.round((Math.random() - 0.5) * 4);
+        let bad = false;
+        for (let ix = x + dx - 8; ix < x + dx + 9; ix++) {
+          for (let iy = y + dy - 8; iy < y + dy + 9; iy++) {
+            if (this.pointInsideObstacle(ix, iy)) {
+              bad = true;
+              break;
+            }
+          }
+          if (bad) {
+            break;
+          }
         }
-      }
-    }
-
-    for (let x = 0; x < this.width; x += 10) {
-      for (let y = 0; y < this.height; y += 10) {
-        let dx = Math.round((Math.random() - 0.5) * 10);
-        let dy = Math.round((Math.random() - 0.5) * 10);
-        if (obs[(y * width + x) * 4] < 127) {
-          this.getNode(x + dx, y + dy);
+        if (bad) {
+          continue;
         }
+        this.getNode(x + dx, y + dy);
       }
     }
   }
 
   lineIntersectsObstacle(startX, startY, endX, endY) {
-    for (const obstacle of this.obstacles) {
-      const lX = obstacle.x;
-      const tY = obstacle.y;
-      const rX = obstacle.x + obstacle.width;
-      const bY = obstacle.y + obstacle.height;
-      const anyIntersect =
-        lineSegmentsIntersect(startX, startY, endX, endY, lX, tY, rX, tY) ||
-        lineSegmentsIntersect(startX, startY, endX, endY, rX, tY, rX, bY) ||
-        lineSegmentsIntersect(startX, startY, endX, endY, rX, bY, lX, bY) ||
-        lineSegmentsIntersect(startX, startY, endX, endY, lX, bY, lX, tY);
-      if (anyIntersect) {
-        return true;
+    let minX = Math.min(startX, endX);
+    let maxX = Math.max(startX, endX);
+    let minY = Math.min(startY, endY);
+    let maxY = Math.max(startY, endY);
+    for (let x = minX; x <= maxX; x++) {
+      for (let y = minY; y <= maxY; y++) {
+        // This is wrong
+        if (this.pointInsideObstacle(x, y)) {
+          return true;
+        }
       }
     }
     return false;
   }
 
   pointInsideObstacle(x, y) {
-    for (const obstacle of this.obstacles) {
-      const lX = obstacle.x;
-      const tY = obstacle.y;
-      const rX = obstacle.x + obstacle.width;
-      const bY = obstacle.y + obstacle.height;
-      if (x > lX && x < rX && y > tY && y < bY) {
-        return true;
-      }
-    }
-    return false;
+    return this.obs[(y * this.width + x) * 4] > 127;
   }
 
   buildNodeNeighborGraph() {
