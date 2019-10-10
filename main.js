@@ -27,6 +27,13 @@ const renderer = new CanvasRenderer(width, height);
 
 function start(obstacleGfx) {
   const field = new Field(width, height, obstacleGfx);
+  const coolX = 733;
+  const coolY = 215;
+  for (let dx = -10; dx <= 10; dx += 2) {
+    for (let dy = -10; dy <= 10; dy += 2) {
+      field.getNode(coolX + dx, coolY + dy);
+    }
+  }
   field.buildNodeNeighborGraph();
 
   renderer.gfx.fillStyle = 'black';
