@@ -2,40 +2,36 @@ import Node from './Node.js';
 import {lineSegmentsIntersect} from './Utilities.js';
 
 export default class Field {
-  constructor(width, height) {
+  constructor(width, height, obstacleGfx) {
     this.width = width;
     this.height = height;
     this.obstacles = [];
     this.nodes = new Map();
+    const obs = obstacleGfx.getImageData(0, 0, width, height).data;
+    this.obs = obs;
 
-    for (let i = 0; i < 50; i++) {
-      const x = Math.random() * width * 6 / 8 + width / 8;
-      const y = Math.random() * height * 6 / 8 + height / 8;
-      const w = 16;
-      const h = 80;
-
-      this.obstacles.push({
-        x: x - w / 2,
-        y: y - h / 2,
-        width: w,
-        height: h,
-      });
-      const allowance = 4;
-      const lX = x - w / 2 - allowance;
-      const rX = x + w / 2 + allowance;
-      const tY = y - h / 2 - allowance;
-      const bY = y + h / 2 + allowance;
-      this.getNode(lX, tY);
-      this.getNode(rX, tY);
-      this.getNode(rX, bY);
-      this.getNode(lX, bY);
+    for (let y = 0; y < height; y += 4) {
+      for (let x = 0; x < width; x += 4) {
+        let w = 8;
+        let h = 8;
+        if (obs[(y * width + x) * 4] > 127) {
+          this.obstacles.push({
+            x: x - w / 2,
+            y: y - h / 2,
+            width: w,
+            height: h,
+          });
+        }
+      }
     }
 
-    for (let x = 0; x <= this.width; x += 10) {
-      for (let y = 0; y <= this.height; y += 10) {
+    for (let x = 0; x < this.width; x += 10) {
+      for (let y = 0; y < this.height; y += 10) {
         let dx = Math.round((Math.random() - 0.5) * 10);
         let dy = Math.round((Math.random() - 0.5) * 10);
-        this.getNode(x + dx, y + dy);
+        if (obs[(y * width + x) * 4] < 127) {
+          this.getNode(x + dx, y + dy);
+        }
       }
     }
   }

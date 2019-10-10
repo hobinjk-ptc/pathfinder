@@ -1,9 +1,10 @@
 import AStar from './AStar.js';
 import CanvasRenderer from './CanvasRenderer.js';
 import Field from './Field.js';
+import stlToDepthImage from './stlToDepthImage.js'
 
-const width = 800;
-const height = 480;
+const width = 1180;
+const height = 650;
 
 const renderer = new CanvasRenderer(width, height);
 
@@ -24,30 +25,37 @@ const renderer = new CanvasRenderer(width, height);
 
 // renderer.drawField(field);
 
-const field = new Field(width, height);
-field.buildNodeNeighborGraph();
+function start(obstacleGfx) {
+  const field = new Field(width, height, obstacleGfx);
+  field.buildNodeNeighborGraph();
 
-renderer.gfx.fillStyle = 'black';
-renderer.fillObstacles(field);
+  renderer.gfx.fillStyle = 'black';
+  renderer.fillObstacles(field);
 
-function frame() {
-  const nodes = Array.from(field.nodes.values());
-  for (let node of nodes) {
-    node.pred = null;
-  }
+  function frame() {
+    const nodes = Array.from(field.nodes.values());
+    for (let node of nodes) {
+      node.pred = null;
+    }
 
-  const start = nodes[Math.floor(Math.random() * nodes.length)];
-  const goal = nodes[Math.floor(Math.random() * nodes.length)];
-  if (goal === start) {
+    const start = nodes[Math.floor(Math.random() * nodes.length)];
+    const goal = nodes[Math.floor(Math.random() * nodes.length)];
+    if (goal === start) {
+      requestAnimationFrame(frame);
+      return;
+    }
+    const aStar = new AStar(field, start, goal);
+    const path = aStar.search();
+    if (path) {
+      renderer.drawPath(path);
+    }
     requestAnimationFrame(frame);
-    return;
   }
-  const aStar = new AStar(field, start, goal);
-  const path = aStar.search();
-  if (path) {
-    renderer.drawPath(path);
-  }
-  requestAnimationFrame(frame);
+
+  frame();
 }
 
-frame();
+stlToDepthImage(function(gfx) {
+  console.log('this will work', gfx);
+  start(gfx);
+});
