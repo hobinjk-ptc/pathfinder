@@ -25,7 +25,7 @@ const renderer = new CanvasRenderer(width, height);
 
 // renderer.drawField(field);
 
-function start(obstacleGfx) {
+function start(obstacleGfx, baseId) {
   const field = new Field(width, height, obstacleGfx);
   const coolX = 733;
   const coolY = 215;
@@ -39,7 +39,7 @@ function start(obstacleGfx) {
   renderer.gfx.fillStyle = 'black';
   // renderer.fillObstacles(field);
   // renderer.drawField(field);
-  let id = obstacleGfx.getImageData(0, 0, width, height);
+  let id = baseId;
   for (let i = 0; i < id.data.length / 4; i++) {
     if (id.data[4 * i] > 127) {
       id.data[4 * i + 0] = 0;
@@ -80,7 +80,9 @@ function start(obstacleGfx) {
 
 stlToDepthImage(function(gfx) {
   gfx.clearRect(0, 0, width, height);
-  gfx.drawImage(document.querySelector('img'), 0, 0);
-  console.log('this will work', gfx);
-  start(gfx);
+  gfx.drawImage(document.querySelector('img.middleground'), 0, 0);
+  const baseId = gfx.getImageData(0, 0, width, height)
+  gfx.clearRect(0, 0, width, height);
+  gfx.drawImage(document.querySelector('img.coolest'), 0, 0);
+  start(gfx, baseId);
 });

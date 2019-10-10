@@ -157,7 +157,7 @@ function readDepthData(callback) {
   canvas.style.height = `${th}px`;
   const coolestGfx = canvas.getContext('2d');
   coolestGfx.putImageData(coolGfx.getImageData(tx, ty, tw, th), 0, 0);
-  document.body.appendChild(canvas);
+  // document.body.appendChild(canvas);
   callback(coolestGfx);
 }
 
