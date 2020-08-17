@@ -27,8 +27,9 @@ export default class AStar {
     openSet.insert(this.start, this.h(this.start));
     g.set(this.start.id, 0);
 
-    // eslint-disable-next-line
-    while (true) {
+    let t = 0;
+    while (t < 100000) {
+      t++;
       const current = openSet.pop();
       if (!current) {
         return;
