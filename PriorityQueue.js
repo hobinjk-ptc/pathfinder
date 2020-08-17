@@ -1,39 +1,114 @@
 export default class PriorityQueue {
   constructor() {
-    this.queue = new Map();
+    this.heap = [];
+  }
+
+  isHeapy(i) {
+    const li = i * 2 + 1;
+    const ri = i * 2 + 2;
+    if (li >= this.heap.length) {
+      return true;
+    }
+    const left = this.heap[li];
+    const right = this.heap[ri];
+    if (this.heap[i].key > left.key) {
+      return false;
+    }
+    if (right && this.heap[i].key > right.key) {
+      return false;
+    }
+    return this.isHeapy(li) && this.isHeapy(ri);
   }
 
   pop() {
-    let min = null;
-    for (const value of this.queue.values()) {
-      if (!min || value.key < min.key) {
-        min = value;
-      }
+    if (this.heap.length === 1) {
+      return this.heap.pop().node;
     }
+    const min = this.heap[0];
     if (!min) {
       return null;
     }
-    this.queue.delete(min.node.id);
+    let i = 0;
+    this.heap[0] = this.heap.pop();
+
+    while (i < this.heap.length) {
+      const li = i * 2 + 1;
+      const ri = i * 2 + 2;
+      if (li >= this.heap.length) {
+        break;
+      }
+      const left = this.heap[li];
+      const right = this.heap[ri];
+      if (!left && !right) {
+        break;
+      }
+      if (!right || left.key <= right.key) {
+        if (this.heap[i].key <= left.key) {
+          break;
+        }
+        this.heap[li] = this.heap[i];
+        this.heap[i] = left;
+        i = li;
+      } else {
+        if (this.heap[i].key <= right.key) {
+          break;
+        }
+        this.heap[ri] = this.heap[i];
+        this.heap[i] = right;
+        i = ri;
+      }
+    }
     return min.node;
   }
 
-  contains(node) {
-    this.queue.remove(node.id);
+  insert(node, key) {
+    this.update(node, key);
   }
 
-  insert(node, key) {
-    if (this.queue.has(node.id)) {
-      this.queue.get(node.id).key = key;
-    } else {
-      this.queue.set(node.id, {
-        node,
-        key,
-      });
+  insertNew(node, key) {
+    let i = this.heap.length;
+    let value = {key, node};
+    this.heap.push(value);
+    while (i > 0) {
+      const pi = (i - 1) >> 1;
+      const parent = this.heap[pi];
+      if (value.key >= parent.key) {
+        break;
+      }
+
+      this.heap[pi] = value;
+      this.heap[i] = parent;
+      i = pi;
     }
   }
 
-  keys() {
-    return Array.from(this.queue.keys());
+  update(node, key) {
+    let i;
+    for (i = 0; i < this.heap.length; i++) {
+      let value = this.heap[i];
+      if (value.node.id === node.id) {
+        if (value.key <= key) {
+          return;
+        }
+        break;
+      }
+    }
+    if (i >= this.heap.length) {
+      this.insertNew(node, key);
+      return;
+    }
+    this.heap[i].key = key;
+    while (i > 0) {
+      const pi = (i - 1) >> 1;
+      const parent = this.heap[pi];
+      if (key >= parent.key) {
+        break;
+      }
+
+      this.heap[pi] = this.heap[i];
+      this.heap[i] = parent;
+      i = pi;
+    }
   }
 }
 

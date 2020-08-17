@@ -74,6 +74,7 @@ export default class Field {
   key(x, y) {
     return Math.floor(y * this.width + x);
   }
+
   getNode(x, y) {
     const key = this.key(x, y);
     if (this.nodes.has(key)) {

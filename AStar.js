@@ -43,12 +43,13 @@ export default class AStar {
 
       closedSet.add(current.id);
 
-      current.neighbors.forEach(neighbor => {
+      for (let i = 0; i < current.neighbors.length; i++) {
+        const neighbor = current.neighbors[i];
         if (closedSet.has(neighbor.id)) {
-          return;
+          continue;
         }
         if (!g.has(current.id)) {
-          return;
+          continue;
         }
         let newG = g.get(current.id) + this.field.cost(current, neighbor);
         if (!g.has(neighbor.id) || newG < g.get(neighbor)) {
@@ -56,7 +57,7 @@ export default class AStar {
           g.set(neighbor.id, newG);
           openSet.insert(neighbor, newG + this.h(neighbor));
         }
-      });
+      }
     }
   }
 }
