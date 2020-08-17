@@ -19,10 +19,11 @@ function addCoolNodes(field, coolX, coolY, scaleX, scaleY) {
   // renderer.gfx.fillRect(coolX - scaleX, coolY - scaleY, scaleX * 2, scaleY * 2);
 }
 
+let field, nodes;
+
 function start(obstacleGfx, baseId) {
   renderer.gfx.fillStyle = 'black';
   // renderer.fillObstacles(field);
-  // renderer.drawField(field);
   let id = baseId;
   for (let i = 0; i < id.data.length / 4; i++) {
     if (id.data[4 * i] > 127) {
@@ -46,35 +47,39 @@ function start(obstacleGfx, baseId) {
     }, 1000);
   }
 
-  const field = new Field(width, height, obstacleGfx);
+  field = new Field(width, height, obstacleGfx);
   addCoolNodes(field, 733, 215, 10, 10);
   addCoolNodes(field, 914, 264, 8, 10);
   addCoolNodes(field, 920, 288, 12, 12);
   addCoolNodes(field, 929, 310, 16, 8);
   field.buildNodeNeighborGraph();
+  nodes = Array.from(field.nodes.values());
 
-  function frame() {
-    const nodes = Array.from(field.nodes.values());
-    for (let node of nodes) {
-      node.pred = null;
-    }
-
-    const start = nodes[Math.floor(Math.random() * nodes.length)];
-    const goal = nodes[Math.floor(Math.random() * nodes.length)];
-    if (goal === start) {
-      requestAnimationFrame(frame);
-      return;
-    }
-    const aStar = new AStar(field, start, goal);
-    const path = aStar.search();
-    if (path) {
-      renderer.drawPath(path);
-    }
-    requestAnimationFrame(frame);
-  }
-
+  // renderer.drawField(field);
   frame();
 }
+
+function frame() {
+  for (let node of nodes) {
+    node.pred = null;
+  }
+
+  const start = nodes[Math.floor(Math.random() * nodes.length)];
+  const goal = nodes[Math.floor(Math.random() * nodes.length)];
+
+  if (goal === start) {
+    requestAnimationFrame(frame);
+    return;
+  }
+  const aStar = new AStar(field, start, goal);
+  const path = aStar.search();
+  if (path) {
+    renderer.drawPath(path);
+  }
+  requestAnimationFrame(frame);
+}
+window.frame = frame;
+
 
 stlToDepthImage(function(gfx) {
   gfx.clearRect(0, 0, width, height);
