@@ -14,8 +14,9 @@ export default class Field {
         let dx = Math.round((Math.random() - 0.5) * 4);
         let dy = Math.round((Math.random() - 0.5) * 4);
         let bad = false;
-        for (let ix = x + dx - 8; ix < x + dx + 9; ix++) {
-          for (let iy = y + dy - 8; iy < y + dy + 9; iy++) {
+        const tol = 7;
+        for (let ix = x + dx - tol; ix <= x + dx + tol; ix++) {
+          for (let iy = y + dy - tol; iy <= y + dy + tol; iy++) {
             if (this.pointInsideObstacle(ix, iy)) {
               bad = true;
               break;
